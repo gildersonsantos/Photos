@@ -1,7 +1,6 @@
 package br.edu.ifsp.scl.sdm.photos.ui
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -15,19 +14,7 @@ import br.edu.ifsp.scl.sdm.photos.adapter.ProductImageAdapter
 import br.edu.ifsp.scl.sdm.photos.databinding.ActivityMainBinding
 import br.edu.ifsp.scl.sdm.photos.model.PhotosJSONAPI
 import br.edu.ifsp.scl.sdm.photos.model.Product
-import br.edu.ifsp.scl.sdm.photos.model.ProductList
-import com.android.volley.Request
 import com.android.volley.toolbox.ImageRequest
-import com.android.volley.toolbox.StringRequest
-import com.google.gson.Gson
-import com.google.gson.JsonSyntaxException
-import java.io.BufferedInputStream
-import java.io.IOException
-import java.io.InputStreamReader
-import java.net.HttpURLConnection
-import java.net.HttpURLConnection.HTTP_OK
-import java.net.URL
-import java.nio.Buffer
 
 class MainActivity : AppCompatActivity() {
     private val amb: ActivityMainBinding by lazy {
@@ -42,10 +29,6 @@ class MainActivity : AppCompatActivity() {
     private val productImageList: MutableList<Bitmap> = mutableListOf()
     private val productImageAdapter: ProductImageAdapter by lazy {
         ProductImageAdapter(this, productImageList)
-    }
-
-    companion object {
-        const val PRODUCTS_ENDPOINT = "https://dummyjson.com/products/"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,13 +64,13 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun retrieveProducts() {
-        StringRequest(Request.Method.GET, PRODUCTS_ENDPOINT, { response ->
-            Gson().fromJson(response, ProductList::class.java).products.also {
+        PhotosJSONAPI.ProductListRequest({ productList ->
+            productList.products.also {
                 productAdapter.addAll(it)
             }
         }, {
             Toast.makeText(this, getString(R.string.request_problem), Toast.LENGTH_SHORT).show()
-        }).also {
+        } ).also {
             PhotosJSONAPI.getInstance(this).addToRequestQueue(it)
         }
     }
