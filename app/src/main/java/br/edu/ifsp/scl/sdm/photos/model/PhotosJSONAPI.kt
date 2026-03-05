@@ -9,12 +9,13 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.HttpHeaderParser
 import com.android.volley.toolbox.Volley
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import java.net.HttpURLConnection.HTTP_NOT_MODIFIED
 import java.net.HttpURLConnection.HTTP_OK
 
 class PhotosJSONAPI(context: Context) {
     companion object {
-        const val PRODUCTS_ENDPOINT = "https://dummyjson.com/products/"
+        const val PHOTOS_ENDPOINT = "https://jsonplaceholder.typicode.com/photos/"
 
         @Volatile
         private var INSTANCE: PhotosJSONAPI? = null
@@ -34,15 +35,15 @@ class PhotosJSONAPI(context: Context) {
         requestQueue.add(request)
     }
 
-    class ProductListRequest (
-        private val responseListener: Response.Listener<ProductList>,
+    class PhotoListRequest (
+        private val responseListener: Response.Listener<List<Photo>>,
         errorListener: Response.ErrorListener
-    ): Request<ProductList>(Method.GET, PRODUCTS_ENDPOINT, errorListener) {
-        override fun parseNetworkResponse(response: NetworkResponse?): Response<ProductList?>? =
+    ): Request<List<Photo>>(Method.GET, PHOTOS_ENDPOINT, errorListener) {
+        override fun parseNetworkResponse(response: NetworkResponse?): Response<List<Photo>?>? =
             if (response?.statusCode == HTTP_OK || response?.statusCode == HTTP_NOT_MODIFIED) {
                 String(response.data).run {
                     Response.success(
-                        Gson().fromJson(this, ProductList::class.java),
+                        Gson().fromJson(this, object : TypeToken<List<Photo>>() {}.type),
                         HttpHeaderParser.parseCacheHeaders(response)
                     )
                 }
@@ -50,7 +51,7 @@ class PhotosJSONAPI(context: Context) {
                 Response.error(VolleyError())
             }
 
-        override fun deliverResponse(response: ProductList?) {
+        override fun deliverResponse(response: List<Photo>?) {
             responseListener.onResponse(response)
         }
     }
